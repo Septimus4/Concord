@@ -47,11 +47,11 @@ jobs:
         run: poetry install --no-root
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           # Add any custom queries if needed
           # queries: ./path/to/custom/queries
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
