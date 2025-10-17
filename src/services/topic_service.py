@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import List, Sequence
 
-from services.graph_repository import InMemoryGraphRepository
+from services.graph_repository import GraphRepository
 
 _TOKEN_PATTERN = re.compile(r"[a-zA-Z]{3,}")
 _STOP_WORDS = {
@@ -65,7 +65,7 @@ class TopicCandidate:
 class TopicExtractionService:
     """Performs lightweight topic extraction suitable for the MVP."""
 
-    def __init__(self, repository: InMemoryGraphRepository, *, max_topics: int = 5) -> None:
+    def __init__(self, repository: GraphRepository, *, max_topics: int = 5) -> None:
         self._repository = repository
         self._max_topics = max_topics
 
@@ -112,7 +112,7 @@ class TopicExtractionService:
 class TopicQueryService:
     """Provides read operations for topics and related channels."""
 
-    def __init__(self, repository: InMemoryGraphRepository) -> None:
+    def __init__(self, repository: GraphRepository) -> None:
         self._repository = repository
 
     def get_channel_topics(self, platform_id: str, channel_id: str) -> List[str]:
@@ -128,7 +128,7 @@ class TopicQueryService:
 class TrendingService:
     """Computes trending topics based on recent updates."""
 
-    def __init__(self, repository: InMemoryGraphRepository) -> None:
+    def __init__(self, repository: GraphRepository) -> None:
         self._repository = repository
 
     def trending_topics(

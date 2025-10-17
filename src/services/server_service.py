@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Optional
 
-from services.graph_repository import InMemoryGraphRepository
+from services.graph_repository import GraphRepository
 
 
 class ServerService:
     """Coordinates platform registration."""
 
-    def __init__(self, repository: InMemoryGraphRepository) -> None:
+    def __init__(self, repository: GraphRepository) -> None:
         self._repository = repository
 
     def register_server(
