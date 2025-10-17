@@ -41,6 +41,7 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
     tags=["servers"],
     summary="Register a new server/group",
     response_model_by_alias=True,
+    status_code=status.HTTP_201_CREATED,
 )
 async def register_server(
     server_register_request: ServerRegisterRequest = Body(None,

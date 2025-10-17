@@ -2,44 +2,38 @@
 
 from fastapi.testclient import TestClient
 
-from concord.server.models.channel_messages_request import ChannelMessagesRequest  # noqa: F401
-from concord.server.models.channel_related_response import ChannelRelatedResponse  # noqa: F401
-from concord.server.models.setup_complete200_response import SetupComplete200Response  # noqa: F401
-
 
 def test_process_memory(client: TestClient):
-    """Test case for process_memory
+    payload = {
+        "createdAt": "2024-01-01T00:00:00Z",
+        "structured": {
+            "sentiment": "neutral",
+            "additionalData": {
+                "platform_id": "omi",
+                "channel_id": "daily-sync",
+            },
+        },
+        "pluginsResponse": [],
+        "discarded": False,
+        "transcriptSegments": [
+            {
+                "text": "We covered the graph analytics backlog and topic extraction goals.",
+                "speaker": "Alex",
+                "speaker_id": 1,
+                "is_user": True,
+                "start": 0,
+                "end": 5,
+            }
+        ],
+    }
 
-    Process memory data and retrieve related channels
-    """
-    # channel_messages_request = {"messages": ["messages", "messages"]}
-
-    # headers = {}
-    # uncomment below to make a request
-    # response = client.request(
-    #    "POST",
-    #    "/process-memory",
-    #    headers=headers,
-    #    json=channel_messages_request,
-    # )
-
-    # uncomment below to assert the status code of the HTTP response
-    # assert response.status_code == 200
+    response = client.post("/process-memory", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "success"
+    assert "Processed" in body["result"]
 
 
 def test_setup_complete(client: TestClient):
-    """Test case for setup_complete
-
-    Confirm setup completion for Concord Channel Finder
-    """
-
-    # headers = {}
-    # uncomment below to make a request
-    # response = client.request(
-    #    "GET",
-    #    "/setup-complete",
-    #    headers=headers,
-    # )
-
-    # uncomment below to assert the status code of the HTTP response
-    # assert response.status_code == 200
+    response = client.get("/setup-complete")
+    assert response.status_code == 200

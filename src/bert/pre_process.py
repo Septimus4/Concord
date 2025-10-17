@@ -1,16 +1,51 @@
-import nltk
-from nltk import WordNetLemmatizer
-from nltk.corpus import stopwords
+import re
 from typing import Any, List
+
+_TOKEN_PATTERN = re.compile(r"[a-zA-Z]{3,}")
+_STOP_WORDS = {
+    "the",
+    "and",
+    "for",
+    "you",
+    "with",
+    "that",
+    "this",
+    "from",
+    "have",
+    "your",
+    "about",
+    "there",
+    "what",
+    "when",
+    "where",
+    "will",
+    "would",
+    "could",
+    "should",
+    "into",
+    "been",
+    "them",
+    "they",
+    "their",
+    "just",
+    "like",
+    "other",
+    "more",
+    "some",
+    "also",
+    "than",
+}
 
 
 def extract_text_segments(data: Any) -> List[str]:
-    texts = []
+    texts: List[str] = []
 
-    def extract_text(value):
-        if isinstance(value, dict):
-            for k, v in value.items():
-                extract_text(v)
+    def extract_text(value: Any) -> None:
+        if hasattr(value, "model_dump"):
+            extract_text(value.model_dump())
+        elif isinstance(value, dict):
+            for child in value.values():
+                extract_text(child)
         elif isinstance(value, list):
             for item in value:
                 extract_text(item)
@@ -21,33 +56,14 @@ def extract_text_segments(data: Any) -> List[str]:
     return texts
 
 
-def preprocess_documents(documents):
-    """
-    Preprocess the documents by:
-    - Lowercasing
-    - Removing punctuation
-    - Removing stop words
-    - Lemmatizing
-    """
-    stop_words = set(stopwords.words('english'))
-    lemmatizer = WordNetLemmatizer()
-    processed_docs = []
+def preprocess_documents(documents: List[str]) -> List[str]:
+    """Lightweight document normalisation without external dependencies."""
 
+    processed_docs: List[str] = []
     for doc in documents:
-        # Lowercase
-        doc = doc.lower()
-        # Tokenize
-        tokens = nltk.word_tokenize(doc)
-        # Remove punctuation and non-alphabetic tokens
-        tokens = [word for word in tokens if word.isalpha()]
-        # Remove stop words and short words
         tokens = [
-            word for word in tokens if word not in stop_words and len(word) > 2
+            token.lower() for token in _TOKEN_PATTERN.findall(doc)
+            if token.lower() not in _STOP_WORDS
         ]
-        # Lemmatize
-        tokens = [lemmatizer.lemmatize(word) for word in tokens]
-        # Rejoin tokens to form the cleaned document
-        processed_doc = ' '.join(tokens)
-        processed_docs.append(processed_doc)
-
+        processed_docs.append(" ".join(tokens))
     return processed_docs

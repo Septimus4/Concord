@@ -2,67 +2,74 @@
 
 from fastapi.testclient import TestClient
 
-from src.concord.server.models.channel_messages_request import ChannelMessagesRequest  # noqa: F401
-from src.concord.server.models.channel_messages_response import ChannelMessagesResponse  # noqa: F401
-from src.concord.server.models.channel_related_response import ChannelRelatedResponse  # noqa: F401
-from src.concord.server.models.channel_topics_response import ChannelTopicsResponse  # noqa: F401
+
+def _ingest(client: TestClient, platform_id: str, channel_id: str, messages: list[str]):
+    response = client.post(
+        f"/channels/{platform_id}/{channel_id}/messages",
+        json={"messages": messages},
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["success"] is True
+    assert payload["processed_messages"] == len(messages)
 
 
 def test_get_channel_topics(client: TestClient):
-    """Test case for get_channel_topics
+    platform = "discord"
+    channel = "dev"
+    messages = [
+        "We discussed API integration for the developer portal today.",
+        "API authentication tokens should be rotated regularly.",
+    ]
+    _ingest(client, platform, channel, messages)
 
-    Get extracted topics for a specific channel
-    """
-
-    # headers = {}
-    # uncomment below to make a request
-    # response = client.request(
-    #    "GET",
-    #    "/channels/{platform_id}/{channel_id}/topics".format(platform_id='platform_id_example',
-    #    channel_id='channel_id_example'),
-    #    headers=headers,
-    # )
-
-    # uncomment below to assert the status code of the HTTP response
-    # assert response.status_code == 200
+    response = client.get(f"/channels/{platform}/{channel}/topics")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["topics"], "Expected at least one topic"
+    assert body["channel_id"] == channel
+    assert body["platform_id"] == platform
 
 
 def test_get_related_channels(client: TestClient):
-    """Test case for get_related_channels
+    platform = "discord"
+    base_channel = "general"
+    related_channel = "general-2"
 
-    Retrieve channels discussing similar topics
-    """
-    # params = [("max_channels", 10)]
-    # headers = {}
-    # uncomment below to make a request
-    # response = client.request(
-    #    "GET",
-    #    "/channels/{platform_id}/{channel_id}/related".format(platform_id='platform_id_example',
-    #    channel_id='channel_id_example'),
-    #    headers=headers,
-    #    params=params,
-    # )
+    _ingest(
+        client,
+        platform,
+        base_channel,
+        [
+            "Graph databases power the recommendation engine.",
+            "We need better graph analytics for topics.",
+        ],
+    )
 
-    # uncomment below to assert the status code of the HTTP response
-    # assert response.status_code == 200
+    _ingest(
+        client,
+        platform,
+        related_channel,
+        [
+            "Graph analytics provide insights into relationships.",
+            "Topic recommendations rely on graph similarity.",
+        ],
+    )
+
+    response = client.get(
+        f"/channels/{platform}/{base_channel}/related",
+        params={"max_channels": 5},
+    )
+    assert response.status_code == 200
+    related = response.json()["related_channels"]
+    assert related, "Expected a related channel"
+    assert related[0]["channel_id"] == related_channel
 
 
 def test_post_channel_messages(client: TestClient):
-    """Test case for post_channel_messages
-
-    Upload messages from a specific channel for processing
-    """
-    # channel_messages_request = {"messages": ["messages", "messages"]}
-
-    # headers = {}
-    # uncomment below to make a request
-    # response = client.request(
-    #    "POST",
-    #    "/channels/{platform_id}/{channel_id}/messages".format(platform_id='platform_id_example',
-    #    channel_id='channel_id_example'),
-    #    headers=headers,
-    #    json=channel_messages_request,
-    # )
-
-    # uncomment below to assert the status code of the HTTP response
-    # assert response.status_code == 200
+    _ingest(
+        client,
+        "slack",
+        "alerts",
+        ["Deployment succeeded", "Alerts for CPU usage are nominal"],
+    )

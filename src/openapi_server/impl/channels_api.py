@@ -1,43 +1,35 @@
 # coding: utf-8
 
-from typing import List  # noqa: F401
+from fastapi import HTTPException
 
-from bert.concord import concord
-from bert.model_manager import ModelManager
 from concord.server.apis.channels_api_base import BaseChannelsApi
 from concord.server.models.channel_messages_request import ChannelMessagesRequest
 from concord.server.models.channel_messages_response import ChannelMessagesResponse
 from concord.server.models.channel_related_response import ChannelRelatedResponse
 from concord.server.models.channel_topics_response import ChannelTopicsResponse
+from concord.server.models.related_channel import RelatedChannel
+from services.container import (get_topic_extraction_service,
+                                get_topic_query_service)
 
 
 class ChannelsApiImpl(BaseChannelsApi):
-    """Implementation of the BaseChannelsApi with boilerplate responses."""
+    """Concrete implementation backed by the in-memory graph repository."""
+
+    def __init__(self) -> None:
+        self._extraction = get_topic_extraction_service()
+        self._queries = get_topic_query_service()
 
     async def get_channel_topics(
         self,
         platform_id: str,
         channel_id: str,
     ) -> ChannelTopicsResponse:
-        """Returns extracted topics for the specified channel."""
-        # TODO Boilerplate/mock implementation
-        mock_topics = [
-            {
-                "topic_id": "1",
-                "name": "General Discussion"
-            },
-            {
-                "topic_id": "2",
-                "name": "Announcements"
-            },
-            {
-                "topic_id": "3",
-                "name": "Feedback"
-            },
-        ]
-        return ChannelTopicsResponse(platform_id=platform_id,
-                                     channel_id=channel_id,
-                                     topics=mock_topics)
+        topics = self._queries.get_channel_topics(platform_id, channel_id)
+        return ChannelTopicsResponse(
+            platform_id=platform_id,
+            channel_id=channel_id,
+            topics=topics,
+        )
 
     async def get_related_channels(
         self,
@@ -45,25 +37,17 @@ class ChannelsApiImpl(BaseChannelsApi):
         channel_id: str,
         max_channels: int,
     ) -> ChannelRelatedResponse:
-        """Fetches channels discussing topics similar to the specified channel."""
-        # TODO Boilerplate/mock implementation
-        mock_related_channels = [
-            {
-                "channel_id": "channel_123",
-                "name": "Tech Talk"
-            },
-            {
-                "channel_id": "channel_456",
-                "name": "Developer Hub"
-            },
-            {
-                "channel_id": "channel_789",
-                "name": "Project Updates"
-            },
-        ][:max_channels]
-        return ChannelRelatedResponse(platform_id=platform_id,
-                                      channel_id=channel_id,
-                                      related_channels=mock_related_channels)
+        related = self._queries.get_related_channels(platform_id, channel_id,
+                                                     max_channels)
+        related_models = [
+            RelatedChannel(
+                platform_id=platform,
+                channel_id=channel,
+                similarity_score=round(score, 4),
+            )
+            for platform, channel, score in related
+        ]
+        return ChannelRelatedResponse(related_channels=related_models)
 
     async def post_channel_messages(
         self,
@@ -71,22 +55,17 @@ class ChannelsApiImpl(BaseChannelsApi):
         channel_id: str,
         channel_messages_request: ChannelMessagesRequest,
     ) -> ChannelMessagesResponse:
-        """Processes a message feed from a specified channel and updates associated topics."""
-        topic_model = ModelManager.get_model()
+        messages = (channel_messages_request.messages
+                    if channel_messages_request else None)
+        if not messages:
+            raise HTTPException(status_code=400,
+                                detail="No messages provided for processing")
 
-        # Add channel_id to the function call, keep original return variables
-        processed_count, error = concord(
-            topic_model,
-            channel_id,
-            platform_id,
-            channel_messages_request.messages,
-        )
+        processed_count = self._extraction.process_channel_messages(
+            platform_id, channel_id, messages)
+        if processed_count == 0:
+            raise HTTPException(status_code=400,
+                                detail="Messages did not contain extractable content")
 
-        if processed_count == -1:
-            return ChannelMessagesResponse(status="error", error=error)
-
-        return ChannelMessagesResponse(platform_id=platform_id,
-                                       channel_id=channel_id,
-                                       processed_messages=processed_count,
-                                       success=True,
-                                       status="success")
+        return ChannelMessagesResponse(success=True,
+                                       processed_messages=processed_count)
