@@ -2,24 +2,26 @@
 
 from fastapi.testclient import TestClient
 
-from src.concord.server.models.trending_topics_response import TrendingTopicsResponse  # noqa: F401
-
 
 def test_get_trending_topics(client: TestClient):
-    """Test case for get_trending_topics
+    platform = "discord"
+    for idx in range(3):
+        channel = f"ch-{idx}"
+        response = client.post(
+            f"/channels/{platform}/{channel}/messages",
+            json={
+                "messages": [
+                    "Topic modeling helps uncover discussions.",
+                    "Community updates improve engagement.",
+                ]
+            },
+        )
+        assert response.status_code == 200
 
-    Retrieve trending topics within a specific time window
-    """
-    # params = [("time_window", 'time_window_example'), ("topic_limit", 10),
-    #           ("channel_limit", 5)]
-    # headers = {}
-    # uncomment below to make a request
-    # response = client.request(
-    #    "GET",
-    #    "/trending/topics",
-    #    headers=headers,
-    #    params=params,
-    # )
-
-    # uncomment below to assert the status code of the HTTP response
-    # assert response.status_code == 200
+    response = client.get(
+        "/trending/topics",
+        params={"time_window": "24h", "topic_limit": 5, "channel_limit": 2},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["topics"], "Expected at least one trending topic"
