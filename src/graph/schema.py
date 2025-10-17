@@ -53,12 +53,14 @@ class Platform(StructuredNode):
                    webhook_url=webhook_url).save()
 
     def add_channel(self, channel_id: str):
-        self.channels.connect(Channel(channel_id=channel_id))
+        channel = Channel(channel_id=channel_id, platform_id=self.platform_id)
+        self.channels.connect(channel)
 
 
 # Nodes
 class Channel(StructuredNode):
     channel_id = StringProperty()
+    platform_id = StringProperty()
     name = StringProperty()
     description = StringProperty()
     created_at = DateTimeProperty(default_now=True)
@@ -75,8 +77,10 @@ class Channel(StructuredNode):
     # Wrapper Functions
     @classmethod
     def create_channel(cls, channel_id: str, name: str, description: str,
-                       language: str, activity_score: float) -> 'Channel':
+                       language: str, activity_score: float,
+                       platform_id: str | None = None) -> 'Channel':
         return cls(channel_id=channel_id,
+                   platform_id=platform_id,
                    name=name,
                    description=description,
                    language=language,
