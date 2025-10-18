@@ -4,49 +4,35 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from functools import lru_cache
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import List, Sequence
+from typing import List, Sequence, Set
 
 from services.graph_repository import GraphRepository
 
 _TOKEN_PATTERN = re.compile(r"[a-zA-Z]{3,}")
-_STOP_WORDS = {
-    "the",
-    "and",
-    "for",
-    "you",
-    "with",
-    "that",
-    "this",
-    "from",
-    "have",
-    "your",
-    "about",
-    "project",
-    "there",
-    "what",
-    "when",
-    "where",
-    "will",
-    "would",
-    "could",
-    "should",
-    "into",
-    "been",
-    "them",
-    "they",
-    "their",
-    "just",
-    "like",
-    "other",
-    "more",
-    "some",
-    "also",
-    "than",
-    "each",
-    "much",
-}
+
+
+@lru_cache(maxsize=1)
+def _stop_words() -> Set[str]:
+    """Return English stopwords using NLTK, downloading if needed.
+
+    Falls back to a minimal set if the corpus is unavailable.
+    """
+    try:
+        from nltk.corpus import stopwords  # type: ignore
+
+        try:
+            return set(stopwords.words("english"))
+        except LookupError:  # download lazily if missing
+            import nltk  # type: ignore
+
+            nltk.download("stopwords", quiet=True)
+            return set(stopwords.words("english"))
+    except Exception:
+        # Minimal fallback (kept tiny) to preserve behavior in offline envs
+        return {"the", "and", "for", "you", "with", "that", "this", "from"}
 
 
 @dataclass
@@ -102,10 +88,11 @@ class TopicExtractionService:
 
     @staticmethod
     def _clean_text(message: str) -> str:
+        sw = _stop_words()
         tokens = [
             token.lower()
             for token in _TOKEN_PATTERN.findall(message)
-            if token.lower() not in _STOP_WORDS
+            if token.lower() not in sw
         ]
         return " ".join(tokens)
 
