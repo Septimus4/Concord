@@ -7,8 +7,7 @@ except Exception:  # pragma: no cover
     config = None
 
 # Get the connection details from environment variables
-DATABASE_URL = os.getenv("DATABASE_URL",
-                         "localhost:7687")  # No `bolt://` prefix here
+DATABASE_URL = os.getenv("DATABASE_URL", "localhost:7687")  # No `bolt://` prefix here
 NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "dev-password")
 

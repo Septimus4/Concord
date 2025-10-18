@@ -8,8 +8,7 @@ from concord.server.models.channel_messages_response import ChannelMessagesRespo
 from concord.server.models.channel_related_response import ChannelRelatedResponse
 from concord.server.models.channel_topics_response import ChannelTopicsResponse
 from concord.server.models.related_channel import RelatedChannel
-from services.container import (get_topic_extraction_service,
-                                get_topic_query_service)
+from services.container import get_topic_extraction_service, get_topic_query_service
 
 
 class ChannelsApiImpl(BaseChannelsApi):
@@ -37,8 +36,9 @@ class ChannelsApiImpl(BaseChannelsApi):
         channel_id: str,
         max_channels: int,
     ) -> ChannelRelatedResponse:
-        related = self._queries.get_related_channels(platform_id, channel_id,
-                                                     max_channels)
+        related = self._queries.get_related_channels(
+            platform_id, channel_id, max_channels
+        )
         related_models = [
             RelatedChannel(
                 platform_id=platform,
@@ -55,17 +55,20 @@ class ChannelsApiImpl(BaseChannelsApi):
         channel_id: str,
         channel_messages_request: ChannelMessagesRequest,
     ) -> ChannelMessagesResponse:
-        messages = (channel_messages_request.messages
-                    if channel_messages_request else None)
+        messages = (
+            channel_messages_request.messages if channel_messages_request else None
+        )
         if not messages:
-            raise HTTPException(status_code=400,
-                                detail="No messages provided for processing")
+            raise HTTPException(
+                status_code=400, detail="No messages provided for processing"
+            )
 
         processed_count = self._extraction.process_channel_messages(
-            platform_id, channel_id, messages)
+            platform_id, channel_id, messages
+        )
         if processed_count == 0:
-            raise HTTPException(status_code=400,
-                                detail="Messages did not contain extractable content")
+            raise HTTPException(
+                status_code=400, detail="Messages did not contain extractable content"
+            )
 
-        return ChannelMessagesResponse(success=True,
-                                       processed_messages=processed_count)
+        return ChannelMessagesResponse(success=True, processed_messages=processed_count)

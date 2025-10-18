@@ -19,11 +19,9 @@ class ServersApiImpl(BaseServersApi):
         server_register_request: ServerRegisterRequest,
     ) -> ServerRegisterResponse:
         if not server_register_request or not server_register_request.name:
-            raise HTTPException(status_code=400,
-                                detail="Server name is required")
+            raise HTTPException(status_code=400, detail="Server name is required")
         if not server_register_request.platform:
-            raise HTTPException(status_code=400,
-                                detail="Platform is required")
+            raise HTTPException(status_code=400, detail="Platform is required")
 
         platform_id = self._service.register_server(
             platform=server_register_request.platform,

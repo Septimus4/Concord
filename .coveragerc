@@ -1,0 +1,14 @@
+[run]
+branch = True
+source = src
+omit =
+    src/concord/server/models/*
+    src/graph/schema.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.: 
+omit =
+    src/concord/server/models/*
+    src/graph/schema.py

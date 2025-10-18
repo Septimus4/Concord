@@ -8,8 +8,18 @@ from concord.server.apis.channels_api_base import BaseChannelsApi
 import openapi_server.impl
 
 from fastapi import (  # noqa: F401
-    APIRouter, Body, Cookie, Depends, Form, Header, HTTPException, Path, Query,
-    Response, Security, status,
+    APIRouter,
+    Body,
+    Cookie,
+    Depends,
+    Form,
+    Header,
+    HTTPException,
+    Path,
+    Query,
+    Response,
+    Security,
+    status,
 )
 
 from concord.server.models.extra_models import TokenModel  # noqa: F401
@@ -30,25 +40,24 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
     responses={
         200: {
             "model": ChannelTopicsResponse,
-            "description": "Topics for the channel retrieved."
+            "description": "Topics for the channel retrieved.",
         },
-        404: {
-            "description": "Channel or topics not found."
-        },
+        404: {"description": "Channel or topics not found."},
     },
     tags=["channels"],
     summary="Get extracted topics for a channel",
     response_model_by_alias=True,
 )
 async def get_channel_topics(
-        platform_id: str = Path(..., description=""),
-        channel_id: str = Path(..., description=""),
+    platform_id: str = Path(..., description=""),
+    channel_id: str = Path(..., description=""),
 ) -> ChannelTopicsResponse:
     """Returns extracted topics for the specified channel."""
     if not BaseChannelsApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
     return await BaseChannelsApi.subclasses[0]().get_channel_topics(
-        platform_id, channel_id)
+        platform_id, channel_id
+    )
 
 
 @router.get(
@@ -56,11 +65,9 @@ async def get_channel_topics(
     responses={
         200: {
             "model": ChannelRelatedResponse,
-            "description": "Related channels list retrieved."
+            "description": "Related channels list retrieved.",
         },
-        404: {
-            "description": "Channel not found."
-        },
+        404: {"description": "Channel not found."},
     },
     tags=["channels"],
     summary="Retrieve related channels by topic",
@@ -75,7 +82,8 @@ async def get_related_channels(
     if not BaseChannelsApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
     return await BaseChannelsApi.subclasses[0]().get_related_channels(
-        platform_id, channel_id, max_channels)
+        platform_id, channel_id, max_channels
+    )
 
 
 @router.post(
@@ -83,11 +91,9 @@ async def get_related_channels(
     responses={
         200: {
             "model": ChannelMessagesResponse,
-            "description": "Messages processed successfully."
+            "description": "Messages processed successfully.",
         },
-        400: {
-            "description": "Invalid input data."
-        },
+        400: {"description": "Invalid input data."},
     },
     tags=["channels"],
     summary="Upload channel messages for processing",
@@ -96,11 +102,11 @@ async def get_related_channels(
 async def post_channel_messages(
     platform_id: str = Path(..., description=""),
     channel_id: str = Path(..., description=""),
-    channel_messages_request: ChannelMessagesRequest = Body(None,
-                                                            description=""),
+    channel_messages_request: ChannelMessagesRequest = Body(None, description=""),
 ) -> ChannelMessagesResponse:
     """Processes a message feed from a specified channel and updates associated topics."""
     if not BaseChannelsApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
     return await BaseChannelsApi.subclasses[0]().post_channel_messages(
-        platform_id, channel_id, channel_messages_request)
+        platform_id, channel_id, channel_messages_request
+    )

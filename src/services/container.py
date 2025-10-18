@@ -1,10 +1,14 @@
 """Dependency container for Concord services."""
+
 from __future__ import annotations
 
 from services.graph_repository import get_repository
 from services.server_service import ServerService
-from services.topic_service import (TopicExtractionService, TopicQueryService,
-                                    TrendingService)
+from services.topic_service import (
+    TopicExtractionService,
+    TopicQueryService,
+    TrendingService,
+)
 
 
 def get_topic_extraction_service() -> TopicExtractionService:

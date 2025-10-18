@@ -8,8 +8,18 @@ from concord.server.apis.trending_api_base import BaseTrendingApi
 import openapi_server.impl
 
 from fastapi import (  # noqa: F401
-    APIRouter, Body, Cookie, Depends, Form, Header, HTTPException, Path, Query,
-    Response, Security, status,
+    APIRouter,
+    Body,
+    Cookie,
+    Depends,
+    Form,
+    Header,
+    HTTPException,
+    Path,
+    Query,
+    Response,
+    Security,
+    status,
 )
 
 from concord.server.models.extra_models import TokenModel  # noqa: F401
@@ -27,11 +37,9 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
     responses={
         200: {
             "model": TrendingTopicsResponse,
-            "description": "Trending topics list retrieved."
+            "description": "Trending topics list retrieved.",
         },
-        400: {
-            "description": "Invalid parameters."
-        },
+        400: {"description": "Invalid parameters."},
     },
     tags=["trending"],
     summary="Get trending topics",
@@ -46,4 +54,5 @@ async def get_trending_topics(
     if not BaseTrendingApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
     return await BaseTrendingApi.subclasses[0]().get_trending_topics(
-        time_window, topic_limit, channel_limit)
+        time_window, topic_limit, channel_limit
+    )

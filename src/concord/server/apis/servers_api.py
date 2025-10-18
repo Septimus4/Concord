@@ -8,8 +8,18 @@ from concord.server.apis.servers_api_base import BaseServersApi
 import openapi_server.impl
 
 from fastapi import (  # noqa: F401
-    APIRouter, Body, Cookie, Depends, Form, Header, HTTPException, Path, Query,
-    Response, Security, status,
+    APIRouter,
+    Body,
+    Cookie,
+    Depends,
+    Form,
+    Header,
+    HTTPException,
+    Path,
+    Query,
+    Response,
+    Security,
+    status,
 )
 
 from concord.server.models.extra_models import TokenModel  # noqa: F401
@@ -28,15 +38,10 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
     responses={
         201: {
             "model": ServerRegisterResponse,
-            "description": "Server/group registered successfully."
+            "description": "Server/group registered successfully.",
         },
-        400: {
-            "description": "Invalid input data or missing required fields."
-        },
-        409: {
-            "description":
-            "Conflict if a server/group with the same name exists."
-        },
+        400: {"description": "Invalid input data or missing required fields."},
+        409: {"description": "Conflict if a server/group with the same name exists."},
     },
     tags=["servers"],
     summary="Register a new server/group",
@@ -44,11 +49,9 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
     status_code=status.HTTP_201_CREATED,
 )
 async def register_server(
-    server_register_request: ServerRegisterRequest = Body(None,
-                                                          description=""),
+    server_register_request: ServerRegisterRequest = Body(None, description=""),
 ) -> ServerRegisterResponse:
     """Registers a new server/group with configurable metadata, including platform and authentication token."""
     if not BaseServersApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
-    return await BaseServersApi.subclasses[0]().register_server(
-        server_register_request)
+    return await BaseServersApi.subclasses[0]().register_server(server_register_request)

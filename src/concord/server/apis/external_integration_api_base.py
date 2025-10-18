@@ -12,16 +12,19 @@ class BaseExternalIntegrationApi:
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        BaseExternalIntegrationApi.subclasses = BaseExternalIntegrationApi.subclasses + (
-            cls, )
+        BaseExternalIntegrationApi.subclasses = (
+            BaseExternalIntegrationApi.subclasses + (cls,)
+        )
 
     async def process_memory(
         self,
         memory_request: MemoryRequest,
     ) -> PluginResponse:
-        """Processes incoming memory data from Omi and retrieves channels related to the topics within the memory. """
+        """Processes incoming memory data from Omi and retrieves channels related to the topics within the memory."""
         ...
 
-    async def setup_complete(self, ) -> SetupComplete200Response:
-        """Indicates that the initial setup for the Concord Channel Finder app is complete. """
+    async def setup_complete(
+        self,
+    ) -> SetupComplete200Response:
+        """Indicates that the initial setup for the Concord Channel Finder app is complete."""
         ...

@@ -1,4 +1,5 @@
 """Graph repository implementations for Concord."""
+
 from __future__ import annotations
 
 import os
@@ -564,7 +565,9 @@ class Neo4jGraphRepository(GraphRepository):
             sorted_channels = sorted(
                 counts.items(), key=lambda item: item[1], reverse=True
             )
-            for (platform_key, channel_id_val), count in sorted_channels[:channel_limit]:
+            for (platform_key, channel_id_val), count in sorted_channels[
+                :channel_limit
+            ]:
                 channel_entries.append((platform_key, channel_id_val, float(count)))
             results.append((topic.name, channel_entries))
         return results
@@ -577,7 +580,6 @@ class Neo4jGraphRepository(GraphRepository):
 # ---------------------------------------------------------------------------
 # Repository factory
 # ---------------------------------------------------------------------------
-
 
 _repository_singleton: Optional[GraphRepository] = None
 _repository_backend: Optional[str] = None

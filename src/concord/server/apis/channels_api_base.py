@@ -13,7 +13,7 @@ class BaseChannelsApi:
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        BaseChannelsApi.subclasses = BaseChannelsApi.subclasses + (cls, )
+        BaseChannelsApi.subclasses = BaseChannelsApi.subclasses + (cls,)
 
     async def get_channel_topics(
         self,
