@@ -7,8 +7,7 @@ from concord.server.apis.external_integration_api_base import BaseExternalIntegr
 from concord.server.models.memory_request import MemoryRequest
 from concord.server.models.plugin_response import PluginResponse
 from concord.server.models.setup_complete200_response import SetupComplete200Response
-from services.container import (get_topic_extraction_service,
-                                get_topic_query_service)
+from services.container import get_topic_extraction_service, get_topic_query_service
 
 app = FastAPI()
 
@@ -21,9 +20,7 @@ def _resolve_context(memory_request: MemoryRequest) -> tuple[str, str]:
 
 
 class ExternalIntegrationApiImpl(BaseExternalIntegrationApi):
-
-    async def process_memory(self,
-                             memory_request: MemoryRequest) -> PluginResponse:
+    async def process_memory(self, memory_request: MemoryRequest) -> PluginResponse:
         messages = extract_text_segments(memory_request.transcript_segments)
         if not messages and memory_request.transcript:
             messages = [memory_request.transcript]
@@ -38,13 +35,14 @@ class ExternalIntegrationApiImpl(BaseExternalIntegrationApi):
 
         platform_id, channel_id = _resolve_context(memory_request)
         extraction = get_topic_extraction_service()
-        processed = extraction.process_channel_messages(platform_id,
-                                                       channel_id,
-                                                       messages)
+        processed = extraction.process_channel_messages(
+            platform_id, channel_id, messages
+        )
         queries = get_topic_query_service()
         related = queries.get_related_channels(platform_id, channel_id, 3)
-        related_summary = ", ".join(
-            f"{channel}" for _, channel, _ in related) if related else "none"
+        related_summary = (
+            ", ".join(f"{channel}" for _, channel, _ in related) if related else "none"
+        )
 
         return PluginResponse(
             plugin_name="Concord",

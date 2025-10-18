@@ -1,4 +1,5 @@
 """Topic processing services used by the API layer."""
+
 from __future__ import annotations
 
 import re
@@ -121,8 +122,9 @@ class TopicQueryService:
     def get_related_channels(
         self, platform_id: str, channel_id: str, max_channels: int
     ) -> List[tuple[str, str, float]]:
-        return self._repository.get_related_channels(platform_id, channel_id,
-                                                     max_channels)
+        return self._repository.get_related_channels(
+            platform_id, channel_id, max_channels
+        )
 
 
 class TrendingService:

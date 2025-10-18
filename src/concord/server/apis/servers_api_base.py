@@ -11,7 +11,7 @@ class BaseServersApi:
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        BaseServersApi.subclasses = BaseServersApi.subclasses + (cls, )
+        BaseServersApi.subclasses = BaseServersApi.subclasses + (cls,)
 
     async def register_server(
         self,

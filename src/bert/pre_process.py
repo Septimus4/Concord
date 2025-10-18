@@ -62,7 +62,8 @@ def preprocess_documents(documents: List[str]) -> List[str]:
     processed_docs: List[str] = []
     for doc in documents:
         tokens = [
-            token.lower() for token in _TOKEN_PATTERN.findall(doc)
+            token.lower()
+            for token in _TOKEN_PATTERN.findall(doc)
             if token.lower() not in _STOP_WORDS
         ]
         processed_docs.append(" ".join(tokens))

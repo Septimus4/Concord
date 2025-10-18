@@ -156,10 +156,29 @@ docker-compose up -d
 
 > **Note:** On Windows, ensure Docker Desktop is running and has sufficient resources allocated.
 
+### Run the Concord API (MVP)
+
+Run the FastAPI server with Poetry:
+
+```bash
+poetry run uvicorn concord.server.main:app --reload --port 8000
+```
+
+The OpenAPI docs will be available at:
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
 ### Run Pre-commit Hooks and Tests
 
 ```bash
 poetry run pre-commit run -a
+```
+
+Run the test suite (optional):
+
+```bash
+poetry run pytest -q
 ```
 
 ## Development
@@ -173,6 +192,31 @@ openapi-generator-cli generate -c config.yml && \
   rm -rf .flake8 docker-compose.yaml requirements.txt Dockerfile && \
   poetry run pre-commit run -a
 ```
+
+## Nuxt Frontend and API Base URL
+
+The Nuxt app (in `frontend/`) can be pointed at a local Concord API by setting a public base URL.
+
+1) Copy the example environment file and edit as needed:
+
+```bash
+cp frontend/.env.example frontend/.env
+```
+
+2) Ensure it contains:
+
+```
+NUXT_PUBLIC_API_BASE=http://localhost:8000
+```
+
+3) Start the dev server from the `frontend/` folder:
+
+```bash
+npm install
+npm run dev
+```
+
+You can now access the UI at http://localhost:3000 while it talks to the API at http://localhost:8000.
 
 ### License
 

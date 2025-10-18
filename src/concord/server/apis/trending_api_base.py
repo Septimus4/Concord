@@ -10,7 +10,7 @@ class BaseTrendingApi:
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        BaseTrendingApi.subclasses = BaseTrendingApi.subclasses + (cls, )
+        BaseTrendingApi.subclasses = BaseTrendingApi.subclasses + (cls,)
 
     async def get_trending_topics(
         self,

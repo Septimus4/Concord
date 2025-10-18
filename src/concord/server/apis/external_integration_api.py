@@ -8,8 +8,18 @@ from concord.server.apis.external_integration_api_base import BaseExternalIntegr
 import openapi_server.impl
 
 from fastapi import (  # noqa: F401
-    APIRouter, Body, Cookie, Depends, Form, Header, HTTPException, Path, Query,
-    Response, Security, status,
+    APIRouter,
+    Body,
+    Cookie,
+    Depends,
+    Form,
+    Header,
+    HTTPException,
+    Path,
+    Query,
+    Response,
+    Security,
+    status,
 )
 
 from concord.server.models.extra_models import TokenModel  # noqa: F401
@@ -28,14 +38,10 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
     "/process-memory",
     responses={
         200: {
-            "model":
-            PluginResponse,
-            "description":
-            "Related channels list retrieved for processed memory data."
+            "model": PluginResponse,
+            "description": "Related channels list retrieved for processed memory data.",
         },
-        400: {
-            "description": "Invalid input data."
-        },
+        400: {"description": "Invalid input data."},
     },
     tags=["external_integration"],
     summary="Process memory data and retrieve related channels",
@@ -44,11 +50,12 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
 async def process_memory(
     memory_request: MemoryRequest = Body(None, description=""),
 ) -> PluginResponse:
-    """Processes incoming memory data from Omi and retrieves channels related to the topics within the memory. """
+    """Processes incoming memory data from Omi and retrieves channels related to the topics within the memory."""
     if not BaseExternalIntegrationApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
     return await BaseExternalIntegrationApi.subclasses[0]().process_memory(
-        memory_request)
+        memory_request
+    )
 
 
 @router.get(
@@ -56,18 +63,16 @@ async def process_memory(
     responses={
         200: {
             "model": SetupComplete200Response,
-            "description": "Setup completion acknowledgment."
+            "description": "Setup completion acknowledgment.",
         },
-        500: {
-            "description": "Server error if setup could not be verified."
-        },
+        500: {"description": "Server error if setup could not be verified."},
     },
     tags=["external_integration"],
     summary="Confirm setup completion for Concord Channel Finder",
     response_model_by_alias=True,
 )
 async def setup_complete() -> SetupComplete200Response:
-    """Indicates that the initial setup for the Concord Channel Finder app is complete. """
+    """Indicates that the initial setup for the Concord Channel Finder app is complete."""
     if not BaseExternalIntegrationApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
     return await BaseExternalIntegrationApi.subclasses[0]().setup_complete()

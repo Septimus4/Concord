@@ -2,6 +2,7 @@
 
 from fastapi.testclient import TestClient
 
+
 def test_register_server(client: TestClient):
     payload = {
         "webhook_url": "https://example.com/webhook",

@@ -26,9 +26,9 @@ def concord(
         return 0, "no documents provided"
 
     extraction_service = get_topic_extraction_service()
-    processed = extraction_service.process_channel_messages(platform_id,
-                                                            channel_id,
-                                                            list(documents))
+    processed = extraction_service.process_channel_messages(
+        platform_id, channel_id, list(documents)
+    )
     if processed == 0:
         return 0, "no content after preprocessing"
     return processed, None

@@ -4,10 +4,20 @@ from datetime import datetime
 from typing import List, Union, Any, Dict
 import numpy as np
 
-from neomodel import (StructuredNode, StructuredRel, StringProperty,
-                      IntegerProperty, FloatProperty, DateTimeProperty,
-                      ArrayProperty, UniqueIdProperty, JSONProperty,
-                      RelationshipTo, RelationshipFrom, Relationship)
+from neomodel import (
+    StructuredNode,
+    StructuredRel,
+    StringProperty,
+    IntegerProperty,
+    FloatProperty,
+    DateTimeProperty,
+    ArrayProperty,
+    UniqueIdProperty,
+    JSONProperty,
+    RelationshipTo,
+    RelationshipFrom,
+    Relationship,
+)
 
 
 # Relationship Models
@@ -40,17 +50,25 @@ class Platform(StructuredNode):
     auth_token = StringProperty()
 
     # Relationships
-    channels = RelationshipFrom('Channel', 'ON_PLATFORM')
+    channels = RelationshipFrom("Channel", "ON_PLATFORM")
 
     # Wrapper Functions
     @classmethod
-    def create_platform(cls, platform_id: str, name: str, description: str,
-                        contact_email: str, webhook_url: str) -> 'Platform':
-        return cls(platform_id=platform_id,
-                   name=name,
-                   description=description,
-                   contact_email=contact_email,
-                   webhook_url=webhook_url).save()
+    def create_platform(
+        cls,
+        platform_id: str,
+        name: str,
+        description: str,
+        contact_email: str,
+        webhook_url: str,
+    ) -> "Platform":
+        return cls(
+            platform_id=platform_id,
+            name=name,
+            description=description,
+            contact_email=contact_email,
+            webhook_url=webhook_url,
+        ).save()
 
     def add_channel(self, channel_id: str):
         channel = Channel(channel_id=channel_id, platform_id=self.platform_id)
@@ -68,37 +86,46 @@ class Channel(StructuredNode):
     activity_score = FloatProperty()
 
     # Relationships
-    topics = RelationshipTo('Topic',
-                            'ASSOCIATED_WITH',
-                            model=AssociatedWithRel)
-    semantic_vectors = RelationshipFrom('SemanticVector', 'BELONGS_TO')
-    updates = RelationshipFrom('TopicUpdate', 'UPDATED_FROM')
+    topics = RelationshipTo("Topic", "ASSOCIATED_WITH", model=AssociatedWithRel)
+    semantic_vectors = RelationshipFrom("SemanticVector", "BELONGS_TO")
+    updates = RelationshipFrom("TopicUpdate", "UPDATED_FROM")
 
     # Wrapper Functions
     @classmethod
-    def create_channel(cls, channel_id: str, name: str, description: str,
-                       language: str, activity_score: float,
-                       platform_id: str | None = None) -> 'Channel':
-        return cls(channel_id=channel_id,
-                   platform_id=platform_id,
-                   name=name,
-                   description=description,
-                   language=language,
-                   activity_score=activity_score).save()
+    def create_channel(
+        cls,
+        channel_id: str,
+        name: str,
+        description: str,
+        language: str,
+        activity_score: float,
+        platform_id: str | None = None,
+    ) -> "Channel":
+        return cls(
+            channel_id=channel_id,
+            platform_id=platform_id,
+            name=name,
+            description=description,
+            language=language,
+            activity_score=activity_score,
+        ).save()
 
-    def associate_with_topic(self, topic: 'Topic', channel_score: float,
-                             trend: str) -> None:
+    def associate_with_topic(
+        self, topic: "Topic", channel_score: float, trend: str
+    ) -> None:
         self.topics.connect(
-            topic, {
-                'channel_score': channel_score,
-                'last_updated': datetime.utcnow(),
-                'trend': trend
-            })
+            topic,
+            {
+                "channel_score": channel_score,
+                "last_updated": datetime.utcnow(),
+                "trend": trend,
+            },
+        )
 
     def add_semantic_vector(
-            self, semantic_vector_values: List[float]) -> 'SemanticVector':
-        semantic_vector = SemanticVector.create_semantic_vector(
-            semantic_vector_values)
+        self, semantic_vector_values: List[float]
+    ) -> "SemanticVector":
+        semantic_vector = SemanticVector.create_semantic_vector(semantic_vector_values)
         semantic_vector.channel.connect(self)
         return semantic_vector
 
@@ -113,48 +140,57 @@ class Topic(StructuredNode):
     updated_at = DateTimeProperty(default_now=True)
 
     # Relationships
-    channels = RelationshipFrom('Channel',
-                                'ASSOCIATED_WITH',
-                                model=AssociatedWithRel)
-    related_topics = Relationship('Topic', 'RELATED_TO', model=RelatedToRel)
-    updates = RelationshipFrom('TopicUpdate', 'UPDATE_OF')
+    channels = RelationshipFrom("Channel", "ASSOCIATED_WITH", model=AssociatedWithRel)
+    related_topics = Relationship("Topic", "RELATED_TO", model=RelatedToRel)
+    updates = RelationshipFrom("TopicUpdate", "UPDATE_OF")
 
     # Wrapper Functions
     @classmethod
-    def create_topic(cls, name: str, keywords: list[dict[str, Any]],
-                     bertopic_metadata: Dict[str, Any]) -> 'Topic':
+    def create_topic(
+        cls,
+        name: str,
+        keywords: list[dict[str, Any]],
+        bertopic_metadata: Dict[str, Any],
+    ) -> "Topic":
         """
         Create a new topic node with the given properties.
         """
-        keywords_json_ready = [{
-            "term": kw["term"],
-            "weight": float(kw["weight"])
-        } for kw in keywords]
+        keywords_json_ready = [
+            {"term": kw["term"], "weight": float(kw["weight"])} for kw in keywords
+        ]
         keywords_json = json.dumps(keywords_json_ready)
-        return cls(name=name,
-                   keywords=keywords_json,
-                   bertopic_metadata=bertopic_metadata).save()
+        return cls(
+            name=name, keywords=keywords_json, bertopic_metadata=bertopic_metadata
+        ).save()
 
-    def relate_to_topic(self, other_topic: 'Topic', similarity_score: float,
-                        temporal_similarity: float, co_occurrence_rate: float,
-                        common_channels: int,
-                        topic_trend_similarity: float) -> None:
+    def relate_to_topic(
+        self,
+        other_topic: "Topic",
+        similarity_score: float,
+        temporal_similarity: float,
+        co_occurrence_rate: float,
+        common_channels: int,
+        topic_trend_similarity: float,
+    ) -> None:
         """
         Create a relationship to another topic with various similarity metrics.
         """
         if not isinstance(other_topic, Topic):
             raise ValueError("The related entity must be a Topic instance.")
         self.related_topics.connect(
-            other_topic, {
-                'similarity_score': similarity_score,
-                'temporal_similarity': temporal_similarity,
-                'co_occurrence_rate': co_occurrence_rate,
-                'common_channels': common_channels,
-                'topic_trend_similarity': topic_trend_similarity
-            })
+            other_topic,
+            {
+                "similarity_score": similarity_score,
+                "temporal_similarity": temporal_similarity,
+                "co_occurrence_rate": co_occurrence_rate,
+                "common_channels": common_channels,
+                "topic_trend_similarity": topic_trend_similarity,
+            },
+        )
 
-    def add_update(self, update_keywords: List[str],
-                   score_delta: float) -> 'TopicUpdate':
+    def add_update(
+        self, update_keywords: List[str], score_delta: float
+    ) -> "TopicUpdate":
         """
         Add an update to the topic with keyword changes and score delta.
         """
@@ -163,8 +199,7 @@ class Topic(StructuredNode):
         return update
 
     # Wrapper Functions
-    def set_topic_embedding(self, embedding: Union[List[float],
-                                                   np.ndarray]) -> None:
+    def set_topic_embedding(self, embedding: Union[List[float], np.ndarray]) -> None:
         """
         Set the topic embedding vector, converting numpy.ndarray to a list of floats.
         """
@@ -194,16 +229,17 @@ class TopicUpdate(StructuredNode):
     timestamp = DateTimeProperty(default_now=True)
 
     # Relationships
-    channel = RelationshipTo('Channel', 'UPDATED_FROM')
-    topic = RelationshipTo('Topic', 'UPDATE_OF')
+    channel = RelationshipTo("Channel", "UPDATED_FROM")
+    topic = RelationshipTo("Topic", "UPDATE_OF")
 
     # Wrapper Functions
     @classmethod
-    def create_topic_update(cls, keywords: List[str],
-                            score_delta: float) -> 'TopicUpdate':
+    def create_topic_update(
+        cls, keywords: List[str], score_delta: float
+    ) -> "TopicUpdate":
         return cls(keywords=keywords, score_delta=score_delta).save()
 
-    def link_to_channel(self, channel: 'Channel') -> None:
+    def link_to_channel(self, channel: "Channel") -> None:
         self.channel.connect(channel)
 
 
@@ -213,10 +249,11 @@ class SemanticVector(StructuredNode):
     created_at = DateTimeProperty(default_now=True)
 
     # Relationships
-    channel = RelationshipTo('Channel', 'BELONGS_TO')
+    channel = RelationshipTo("Channel", "BELONGS_TO")
 
     # Wrapper Functions
     @classmethod
     def create_semantic_vector(
-            cls, semantic_vector_values: List[float]) -> 'SemanticVector':
+        cls, semantic_vector_values: List[float]
+    ) -> "SemanticVector":
         return cls(semantic_vector=semantic_vector_values).save()
